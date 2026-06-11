@@ -31,10 +31,9 @@
     },
     {
         "caption": "Preferences: Focus Mode Window Color Scheme",
-        "command": "edit_settings",
+        "command": "open_file",
         "args": {
-            "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
-            "default": "{\n\t\"variables\": {},\n\t\"globals\": {},\n\t\"rules\": []\n}\n"
+            "file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme"
         }
     },
     {

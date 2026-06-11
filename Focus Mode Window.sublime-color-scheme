@@ -2,23 +2,17 @@
     "name": "Focus Mode Window",
     "author": "Focus Mode Window",
     "variables": {
-        "background": "#1F2329",
-        "foreground": "#A7B2C6",
+        "background": "#1b1d1f",
+        "foreground": "#5c677d",
+        "line_highlight": "#31363d",
         "caret": "#528BFF",
-        "line_highlight": "#383E4A",
         "selection": "#3E4451",
         "inactive_selection": "#2C313C",
         "invisibles": "#3B4048",
         "gutter_fg": "#4B5263",
         "invalid": "#E06C75",
         "paragraph_band": "#232830",
-        
-        "keyword": "#C678DD",
         "string": "#98C379",
-        "comment": "#5C6370",
-        "function": "#61AFEF",
-        "variable": "#E06C75",
-        "constant": "#D19A66",
         "type": "#E5C07B"
     },
     "globals": {
@@ -38,40 +32,9 @@
     },
     "rules": [
         {
-            "name": "Comment",
-            "scope": "comment",
-            "foreground": "var(comment)",
-            "font_style": "italic"
-        },
-        {
-            "name": "String",
-            "scope": "string",
-            "foreground": "var(string)"
-        },
-        {
-            "name": "Keyword",
-            "scope": "keyword, storage",
-            "foreground": "var(keyword)"
-        },
-        {
-            "name": "Function",
-            "scope": "entity.name.function, support.function",
-            "foreground": "var(function)"
-        },
-        {
-            "name": "Variable",
-            "scope": "variable",
-            "foreground": "var(variable)"
-        },
-        {
-            "name": "Constant",
-            "scope": "constant",
-            "foreground": "var(constant)"
-        },
-        {
-            "name": "Type",
-            "scope": "entity.name.type, entity.name.class, support.type, support.class",
-            "foreground": "var(type)"
+            "name": "Dim all tokens",
+            "scope": "comment, constant, entity, invalid, keyword, markup, meta, storage, string, support, variable, source",
+            "foreground": "var(foreground)"
         },
         {
             "name": "Focus paragraph spotlight",
