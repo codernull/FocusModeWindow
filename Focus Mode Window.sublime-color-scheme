@@ -1,6 +1,7 @@
 {
     "name": "Focus Mode Window",
     "author": "Focus Mode Window",
+    "extends": "Mariana",
     "variables": {},
     "globals": {
         "background": "#1b1d1f",
