@@ -20,7 +20,7 @@
 
     // Font size applied while in focus mode (restored on exit).
     // Set to 0 to keep your normal font size and leave Ctrl+-/= zoom untouched.
-    "font_size": 16,
+    "font_size": 0,
 
     // Set to true to also enter OS full screen on focus. Off by default.
     "full_screen": false

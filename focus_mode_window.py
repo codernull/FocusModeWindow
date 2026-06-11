@@ -142,24 +142,24 @@ def _capture_view_settings(view):
 
 
 def _restore_view_settings(view):
-    """Undo focus styling for a view by erasing every key the plugin set.
+    """Undo focus styling for a view by erasing every key the plugin actually set.
 
-    Every key in VIEW_SETTING_KEYS is a view-local override added by this plugin
-    on enter (``_focus_view`` captures+applies a view exactly once, guarded by
-    VIEW_SAVED_KEY). Erasing them lets each setting fall back to the user's
-    normal global / syntax / project layer, which is the only thing that
-    reliably restores the original color scheme and re-enables Ctrl+wheel /
-    Ctrl+-/= zoom (a re-pinned view-local ``font_size`` would mask global zoom).
-
-    We intentionally do NOT ``set()`` captured values back: ``settings.has(key)``
-    is True for keys that merely exist in a lower layer (e.g. global font_size),
-    so re-setting them would pin a brand-new view-local override. Unconditional
-    erase is the simple, correct choice. The only edge cost is that a genuine
-    pre-existing per-view override is also cleared back to global (rare).
+    We erase keys to let them fall back to the user's normal global / syntax /
+    project layer. Unconditional erase is the correct choice, but we MUST NOT
+    erase keys we never modified (like font_size when it's configured as 0),
+    otherwise we would unintentionally destroy the user's pre-existing
+    view-local zoom (Ctrl+wheel).
     """
     settings = view.settings()
     erased = []
-    for key in VIEW_SETTING_KEYS:
+    saved = settings.get(VIEW_SAVED_KEY)
+    if not isinstance(saved, dict):
+        saved = {}
+
+    # Only erase the keys we explicitly modified
+    modified_keys = saved.get("_modified_keys", VIEW_SETTING_KEYS)
+
+    for key in modified_keys:
         settings.erase(key)
         erased.append(key)
     return erased
@@ -167,6 +167,13 @@ def _restore_view_settings(view):
 
 def _apply_focus_to_view(view, plugin_settings):
     vs = view.settings()
+    modified_keys = [
+        "color_scheme", "highlight_line", "draw_centered", "word_wrap",
+        "wrap_width", "rulers", "gutter", "line_numbers", "margin",
+        "line_padding_top", "line_padding_bottom", "scroll_past_end",
+        "typewriter_mode_scrolling"
+    ]
+
     vs.set("color_scheme", plugin_settings.get("color_scheme", DEFAULT_COLOR_SCHEME))
     vs.set("highlight_line", True)
     vs.set("draw_centered", True)
@@ -182,9 +189,15 @@ def _apply_focus_to_view(view, plugin_settings):
     vs.set("typewriter_mode_scrolling", True)
     # font_size is optional: set it to 0 (or null) in settings to keep your
     # normal font size while focused, leaving Ctrl+-/= zoom untouched.
-    font_size = plugin_settings.get("font_size", 16)
+    font_size = plugin_settings.get("font_size", 0)
     if font_size:
         vs.set("font_size", font_size)
+        modified_keys.append("font_size")
+
+    saved = vs.get(VIEW_SAVED_KEY)
+    if isinstance(saved, dict):
+        saved["_modified_keys"] = modified_keys
+        vs.set(VIEW_SAVED_KEY, saved)
 
 
 def _paragraph_region(view, point):

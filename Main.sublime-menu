@@ -25,8 +25,11 @@
                             },
                             { "caption": "-" },
                             {
-                                "command": "open_file",
-                                "args": {"file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme"},
+                                "command": "edit_settings",
+                                "args": {
+                                    "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
+                                    "default": "{\n\t\"variables\": {},\n\t\"globals\": {},\n\t\"rules\": []\n}\n"
+                                },
                                 "caption": "Color Scheme"
                             },
                             { "caption": "-" },

@@ -1,34 +1,26 @@
 {
-    // Palette adapted from "Focus (dark)" by Sindre Sorhus
-    // (https://github.com/sindresorhus/focus, MIT). The idea is identical:
-    // a calm, warm-neutral dark background where syntax tokens are pressed
-    // down close to the background ("dim") so code reads as a uniform, quiet
-    // block, while prose / strings / headings stay readable ("bright"). The
-    // current line is marked by a soft, natural highlight band - never a harsh
-    // colored bar.
     "name": "Focus Mode Window",
-    "author": "Focus Mode Window (palette from Focus by Sindre Sorhus, MIT)",
-
+    "author": "Focus Mode Window",
     "variables": {
-        "background": "#1b1d1f",
-        "dim": "#34373b",
-        "subtle": "#999b99",
-        "bright": "#c5c8c6",
-        "foreground": "#c2c5bd",
-        "caret": "#b6b7b5",
-        "line_highlight": "#2b3550",
-        "selection": "#34373b",
-        "inactive_selection": "#2a2c30",
-        "invisibles": "#43464c",
-        "gutter_fg": "#34373b",
-        "invalid": "#8a5a64",
-        // Background band for the dynamic current-paragraph spotlight. NOTE:
-        // add_regions() fills a region using the matched scope's *foreground*
-        // (it cannot set text foreground), so this color is defined as the
-        // "foreground" of the focusmode.paragraph rule below.
-        "paragraph_band": "#232a3d"
+        "background": "#1F2329",
+        "foreground": "#A7B2C6",
+        "caret": "#528BFF",
+        "line_highlight": "#383E4A",
+        "selection": "#3E4451",
+        "inactive_selection": "#2C313C",
+        "invisibles": "#3B4048",
+        "gutter_fg": "#4B5263",
+        "invalid": "#E06C75",
+        "paragraph_band": "#232830",
+        
+        "keyword": "#C678DD",
+        "string": "#98C379",
+        "comment": "#5C6370",
+        "function": "#61AFEF",
+        "variable": "#E06C75",
+        "constant": "#D19A66",
+        "type": "#E5C07B"
     },
-
     "globals": {
         "background": "var(background)",
         "foreground": "var(foreground)",
@@ -40,59 +32,49 @@
         "invisibles": "var(invisibles)",
         "gutter": "var(background)",
         "gutter_foreground": "var(gutter_fg)",
-        "line_diff_added": "var(dim)",
-        "line_diff_modified": "var(dim)",
-        "line_diff_deleted": "var(dim)"
+        "line_diff_added": "var(string)",
+        "line_diff_modified": "var(type)",
+        "line_diff_deleted": "var(invalid)"
     },
-
-    // No "extends": standalone so syntax highlighting cannot reintroduce bright
-    // token colors. Mirrors the Focus theme's scope mapping.
     "rules": [
         {
-            "name": "All (dim every token toward the background)",
-            "scope": "comment, constant, entity, invalid, keyword, markup, meta, storage, string, support, variable, source",
-            "foreground": "var(dim)"
+            "name": "Comment",
+            "scope": "comment",
+            "foreground": "var(comment)",
+            "font_style": "italic"
         },
         {
-            "name": "Show (prose, quoted strings, section headings)",
-            "scope": "string.quoted, meta.paragraph, entity.name.section",
-            "foreground": "var(bright)"
+            "name": "String",
+            "scope": "string",
+            "foreground": "var(string)"
         },
         {
-            "name": "Show subtle (LaTeX math and macros)",
-            "scope": "text.tex.latex support.function.general.tex, support.function.section.latex, string.other.math.block.environment.latex, text.tex.latex string.other.math.tex, text.tex.latex constant.other.general.math.tex, text.tex.latex invalid.illegal.string",
-            "foreground": "var(subtle)"
+            "name": "Keyword",
+            "scope": "keyword, storage",
+            "foreground": "var(keyword)"
         },
         {
-            "name": "Hide quoted strings in HTML/XML",
-            "scope": "string.quoted.double.html, string.quoted.double.xml",
-            "foreground": "var(dim)"
+            "name": "Function",
+            "scope": "entity.name.function, support.function",
+            "foreground": "var(function)"
         },
         {
-            "name": "Markdown show (inline code, links, quotes)",
-            "scope": "markup.raw.inline.markdown, string.other.link.title.markdown, string.other.link.description.markdown, markup.quote.markdown",
-            "foreground": "var(bright)"
+            "name": "Variable",
+            "scope": "variable",
+            "foreground": "var(variable)"
         },
         {
-            "name": "Markdown show subtle (link URLs)",
-            "scope": "markup.underline.link.markdown, markup.underline.link.image.markdown",
-            "foreground": "var(subtle)"
+            "name": "Constant",
+            "scope": "constant",
+            "foreground": "var(constant)"
         },
         {
-            "name": "Markdown hide (image/link metadata)",
-            "scope": "meta.image.inline.markdown, meta.link.inline.markdown",
-            "foreground": "var(dim)"
+            "name": "Type",
+            "scope": "entity.name.type, entity.name.class, support.type, support.class",
+            "foreground": "var(type)"
         },
         {
-            "name": "Invalid (kept faint, slightly warm)",
-            "scope": "invalid.illegal",
-            "foreground": "var(invalid)"
-        },
-        {
-            // Dynamic current-paragraph spotlight, drawn by the plugin via
-            // view.add_regions(..., "focusmode.paragraph", DRAW_NO_OUTLINE).
-            // The region is filled with this rule's foreground color.
-            "name": "Focus paragraph spotlight (dynamic add_regions background)",
+            "name": "Focus paragraph spotlight",
             "scope": "focusmode.paragraph",
             "foreground": "var(paragraph_band)",
             "background": "var(paragraph_band)"
