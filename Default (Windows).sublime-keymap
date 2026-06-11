@@ -1,0 +1,6 @@
+[
+    {
+        "keys": ["shift+f11"],
+        "command": "toggle_focus_mode_window"
+    }
+]

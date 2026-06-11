@@ -1,0 +1,20 @@
+{
+    // Color scheme applied to every view while focus mode is on.
+    // Restored to your normal scheme when you exit focus mode.
+    "color_scheme": "Packages/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
+
+    // Soft-wrap column and horizontal margins of the centered text column.
+    "wrap_width": 78,
+    "margin": 48,
+
+    // Vertical breathing room between lines.
+    "line_padding_top": 8,
+    "line_padding_bottom": 8,
+
+    // Font size applied while in focus mode (restored on exit).
+    // Set to 0 to keep your normal font size and leave Ctrl+-/= zoom untouched.
+    "font_size": 16,
+
+    // Set to true to also enter OS full screen on focus. Off by default.
+    "full_screen": false
+}

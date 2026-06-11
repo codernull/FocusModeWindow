@@ -1,0 +1,20 @@
+[
+    {
+        "caption": "Focus Mode Window: Toggle",
+        "command": "toggle_focus_mode_window"
+    },
+    {
+        "caption": "Focus Mode Window: Enter",
+        "command": "toggle_focus_mode_window",
+        "args": {
+            "force": true
+        }
+    },
+    {
+        "caption": "Focus Mode Window: Exit",
+        "command": "toggle_focus_mode_window",
+        "args": {
+            "force": false
+        }
+    }
+]

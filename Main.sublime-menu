@@ -1,0 +1,47 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "Focus Mode Window",
+                        "children":
+                        [
+                            {
+                                "command": "edit_settings",
+                                "args": {
+                                    "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-settings",
+                                    "default": "{\n\t$0\n}\n"
+                                },
+                                "caption": "Settings"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "open_file",
+                                "args": {"file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme"},
+                                "caption": "Color Scheme"
+                            },
+                            { "caption": "-" },
+                            {
+                                "command": "edit_settings",
+                                "args": {
+                                    "base_file": "${packages}/FocusModeWindow/Default (Windows).sublime-keymap",
+                                    "default": "[\n\t$0\n]\n"
+                                },
+                                "caption": "Key Bindings"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]
