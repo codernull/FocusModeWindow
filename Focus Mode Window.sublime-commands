@@ -20,5 +20,21 @@
     {
         "caption": "Focus Mode Window: Diagnose",
         "command": "focus_mode_window_diagnose"
+    },
+    {
+        "caption": "Preferences: Focus Mode Window Settings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-settings",
+            "default": "// Focus Mode Window user settings\n{\n\t$0\n}\n"
+        }
+    },
+    {
+        "caption": "Preferences: Focus Mode Window Key Bindings",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/FocusModeWindow/Default (Windows).sublime-keymap",
+            "default": "[\n\t$0\n]\n"
+        }
     }
 ]

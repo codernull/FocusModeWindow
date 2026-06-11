@@ -80,7 +80,7 @@ Open **Preferences → Package Settings → Focus Mode Window**:
 | `margin` | `48` | Horizontal margin of the centered column |
 | `line_padding_top` | `8` | Pixels above each line |
 | `line_padding_bottom` | `8` | Pixels below each line |
-| `font_size` | `16` | Font size while focused (restored on exit) |
+| `font_size` | `16` | Font size while focused (restored on exit). Set to `0` to keep your normal size and leave `Ctrl+-/=` zoom untouched |
 | `full_screen` | `false` | Also enter OS full screen |
 
 ### Colors (faded text & current-line highlight)

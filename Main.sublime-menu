@@ -19,7 +19,7 @@
                                 "command": "edit_settings",
                                 "args": {
                                     "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-settings",
-                                    "default": "{\n\t$0\n}\n"
+                                    "default": "// Focus Mode Window user settings\n{\n\t$0\n}\n"
                                 },
                                 "caption": "Settings"
                             },
