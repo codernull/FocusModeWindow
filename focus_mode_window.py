@@ -1,3 +1,5 @@
+import json
+import os
 import traceback
 
 import sublime
@@ -174,7 +176,26 @@ def _apply_focus_to_view(view, plugin_settings):
         "typewriter_mode_scrolling"
     ]
 
-    vs.set("color_scheme", plugin_settings.get("color_scheme", DEFAULT_COLOR_SCHEME))
+    current_scheme = vs.get("color_scheme")
+    if not current_scheme:
+        current_scheme = sublime.load_settings("Preferences.sublime-settings").get("color_scheme", "Mariana.sublime-color-scheme")
+
+    focus_scheme_data = {
+        "name": "Focus Mode Window (Dynamic)",
+        "extends": current_scheme,
+        "globals": {
+            "background": "#1b1d1f",
+            "line_highlight": "#31363d",
+            "foreground": "#8a95a5"
+        },
+        "rules": []
+    }
+
+    dynamic_scheme_path = os.path.join(sublime.packages_path(), "User", "FocusModeWindow_Dynamic.sublime-color-scheme")
+    with open(dynamic_scheme_path, "w", encoding="utf-8") as f:
+        json.dump(focus_scheme_data, f, indent=4)
+
+    vs.set("color_scheme", "Packages/User/FocusModeWindow_Dynamic.sublime-color-scheme")
     vs.set("highlight_line", True)
     vs.set("draw_centered", plugin_settings.get("draw_centered", False))
     vs.set("word_wrap", plugin_settings.get("word_wrap", True))
