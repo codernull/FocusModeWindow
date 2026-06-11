@@ -48,6 +48,13 @@ WINDOW_CHROME = (
     ("status_bar", "is_status_bar_visible", "set_status_bar_visible"),
 )
 
+# Window ids currently running their exit/restore sequence. While a window is
+# in here the on_activated listener must NOT re-focus any view: erasing a view's
+# VIEW_SAVED_KEY during exit could otherwise let the listener re-capture the
+# already-focused settings as "original" and re-apply them, silently undoing the
+# exit ("focus mode won't turn off").
+_exiting_windows = set()
+
 
 def _log(message):
     print("[FocusMode] " + message)
@@ -123,40 +130,28 @@ def _capture_view_settings(view):
     }
 
 
-def _restore_view_settings(view, saved):
-    """Undo focus styling for a view.
+def _restore_view_settings(view):
+    """Undo focus styling for a view by erasing every key the plugin set.
 
-    The key subtlety: ``view.settings().has(key)`` is True when the key exists
-    at *any* layer (global Preferences, syntax-specific settings, project), not
-    only as a view-local override. So a captured ``has=True`` does NOT mean the
-    view itself had an override. If we naively ``set()`` such a value back we
-    pin a brand-new view-local override that masks the global setting forever -
-    that is exactly what broke ``Ctrl+-/=`` font zoom (font_size got pinned).
+    Every key in VIEW_SETTING_KEYS is a view-local override added by this plugin
+    on enter (``_focus_view`` captures+applies a view exactly once, guarded by
+    VIEW_SAVED_KEY). Erasing them lets each setting fall back to the user's
+    normal global / syntax / project layer, which is the only thing that
+    reliably restores the original color scheme and re-enables Ctrl+wheel /
+    Ctrl+-/= zoom (a re-pinned view-local ``font_size`` would mask global zoom).
 
-    Correct behavior: always ``erase()`` our override first (revealing the
-    user's normal layered value), then only re-pin a value when it was a
-    genuine local override - detected by the captured value differing from what
-    the layered config resolves to once our override is gone.
+    We intentionally do NOT ``set()`` captured values back: ``settings.has(key)``
+    is True for keys that merely exist in a lower layer (e.g. global font_size),
+    so re-setting them would pin a brand-new view-local override. Unconditional
+    erase is the simple, correct choice. The only edge cost is that a genuine
+    pre-existing per-view override is also cleared back to global (rare).
     """
     settings = view.settings()
-    restored = []
     erased = []
     for key in VIEW_SETTING_KEYS:
-        item = saved.get(key)
-        if not item:
-            continue
         settings.erase(key)
-        if not item.get("has"):
-            erased.append(key)
-            continue
-        prior_value = item.get("value")
-        resolved = settings.get(key) if settings.has(key) else None
-        if prior_value != resolved:
-            settings.set(key, prior_value)
-            restored.append(key)
-        else:
-            erased.append(key)
-    return restored, erased
+        erased.append(key)
+    return erased
 
 
 def _apply_focus_to_view(view, plugin_settings):
@@ -192,14 +187,13 @@ def _focus_view(view, plugin_settings):
 
 
 def _unfocus_view(view):
-    """Restore a view from its saved settings, if it has any."""
+    """Restore a view if it is currently in focus mode."""
     vs = view.settings()
-    saved = vs.get(VIEW_SAVED_KEY)
-    if not saved:
+    if not vs.has(VIEW_SAVED_KEY):
         return False
-    restored, erased = _restore_view_settings(view, saved)
+    erased = _restore_view_settings(view)
     vs.erase(VIEW_SAVED_KEY)
-    _log("view %d restored set=%s erased=%s" % (view.id(), restored, erased))
+    _log("view %d erased=%s" % (view.id(), erased))
     return True
 
 
@@ -264,35 +258,73 @@ class ToggleFocusModeWindowCommand(sublime_plugin.WindowCommand):
         _log("exiting focus mode")
         ws = _window_settings(window)
 
+        # Read the snapshot first, then immediately mark the window as NOT in
+        # focus (and as "exiting") BEFORE restoring any view. Doing this first
+        # closes the on_activated re-entry race that otherwise undoes the exit.
         chrome = ws.get(WIN_CHROME_KEY, {}) if ws is not None else {}
         fullscreen_toggled = bool(ws.get(WIN_FULLSCREEN_KEY, False)) if ws is not None else False
 
-        for name, _getter, setter in WINDOW_CHROME:
-            saved_value = chrome.get(name) if chrome else None
-            # Fall back to "visible" when the original value is unknown.
-            _safe_set_chrome(window, setter, True if saved_value is None else saved_value)
-
-        if fullscreen_toggled:
-            window.run_command("toggle_full_screen")
-
-        restored = 0
-        for view in list(window.views()):
-            if _unfocus_view(view):
-                restored += 1
-
         if ws is not None:
-            ws.erase(WIN_ACTIVE_KEY)
-            ws.erase(WIN_CHROME_KEY)
-            ws.erase(WIN_FULLSCREEN_KEY)
+            ws.set(WIN_ACTIVE_KEY, False)
+        _exiting_windows.add(window.id())
+        try:
+            for name, _getter, setter in WINDOW_CHROME:
+                saved_value = chrome.get(name) if chrome else None
+                # Fall back to "visible" when the original value is unknown.
+                _safe_set_chrome(window, setter, True if saved_value is None else saved_value)
+
+            if fullscreen_toggled:
+                window.run_command("toggle_full_screen")
+
+            restored = 0
+            for view in list(window.views()):
+                if _unfocus_view(view):
+                    restored += 1
+
+            if ws is not None:
+                ws.erase(WIN_ACTIVE_KEY)
+                ws.erase(WIN_CHROME_KEY)
+                ws.erase(WIN_FULLSCREEN_KEY)
+        finally:
+            _exiting_windows.discard(window.id())
 
         _log("focus mode OFF (restored %d views)" % restored)
         sublime.status_message("Focus Mode Window: off")
+
+
+class FocusModeWindowDiagnoseCommand(sublime_plugin.WindowCommand):
+    def run(self):
+        window = self.window
+        ws = _window_settings(window)
+        view = window.active_view()
+        _log("---- diagnose (window %s) ----" % window.id())
+        _log("is_focus_window=%s" % _is_focus_window(window))
+        _log("window.settings() available=%s" % (ws is not None))
+        if ws is not None:
+            _log("WIN_ACTIVE_KEY=%r" % ws.get(WIN_ACTIVE_KEY, None))
+            _log("WIN_CHROME_KEY=%r" % ws.get(WIN_CHROME_KEY, None))
+        _log("exiting_in_progress=%s" % (window.id() in _exiting_windows))
+        if view is None:
+            _log("no active view")
+        else:
+            vs = view.settings()
+            _log("active view %d:" % view.id())
+            _log("  has %s=%s" % (VIEW_SAVED_KEY, vs.has(VIEW_SAVED_KEY)))
+            for key in ("color_scheme", "highlight_line", "font_size",
+                        "draw_centered", "word_wrap"):
+                _log("  %s=%r" % (key, vs.get(key)))
+        _log("---- end diagnose ----")
+        sublime.status_message("Focus Mode Window: diagnose printed to console")
 
 
 class FocusModeWindowListener(sublime_plugin.EventListener):
     def on_activated(self, view):
         window = view.window()
         if not _is_focus_window(window):
+            return
+        # Never re-focus while this window is tearing down focus mode, or the
+        # exit would be silently undone (see _exiting_windows note above).
+        if window is not None and window.id() in _exiting_windows:
             return
         if not view.settings().has(VIEW_SAVED_KEY):
             if _focus_view(view, _plugin_settings()):

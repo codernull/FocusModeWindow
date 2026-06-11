@@ -16,7 +16,7 @@
         "bright": "#c5c8c6",
         "foreground": "#c2c5bd",
         "caret": "#b6b7b5",
-        "line_highlight": "#31363d",
+        "line_highlight": "#2b3550",
         "selection": "#34373b",
         "inactive_selection": "#2a2c30",
         "invisibles": "#43464c",

@@ -16,5 +16,9 @@
         "args": {
             "force": false
         }
+    },
+    {
+        "caption": "Focus Mode Window: Diagnose",
+        "command": "focus_mode_window_diagnose"
     }
 ]

@@ -121,6 +121,15 @@ The plugin logs every step to the Sublime console. Open it with
 - Any unexpected error prints `UNHANDLED ERROR in toggle:` with a full
   traceback and shows `Focus Mode Window: error (see console)` in the status
   bar.
+- Run **Command Palette → Focus Mode Window: Diagnose** to dump the current
+  window/view state (`is_focus_window`, the active view's `color_scheme`,
+  `highlight_line`, `font_size`, etc.) to the console.
+
+On exit the plugin **erases** every view setting it applied so each falls back
+to your normal global / syntax settings (this is what re-enables `Ctrl+wheel`
+and `Ctrl+-/=` zoom). Edge case: if you had manually set a per-view override
+(e.g. zoomed a single tab) *before* entering focus mode, that override is also
+cleared back to the global value on exit.
 
 To force a reload after editing, save `focus_mode_window.py` or run
 **Package Control: Satisfy Dependencies**, or just restart Sublime Text.
