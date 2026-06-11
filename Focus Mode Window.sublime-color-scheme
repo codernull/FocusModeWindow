@@ -5,8 +5,45 @@
     "variables": {},
     "globals": {
         "background": "#1b1d1f",
-        "foreground": "#c7ccd4",
-        "line_highlight": "#31363d"
+        "foreground": "#5c6370",
+        "line_highlight": "#31363d",
+        "caret": "#ffffff"
     },
-    "rules": []
+    "rules": [
+        {
+            "name": "Dim Headings",
+            "scope": "markup.heading",
+            "foreground": "#5c677d"
+        },
+        {
+            "name": "Dim Bold and Italic",
+            "scope": "markup.bold, markup.italic",
+            "foreground": "#6b7280"
+        },
+        {
+            "name": "Dim Links",
+            "scope": "markup.underline.link",
+            "foreground": "#4a5568"
+        },
+        {
+            "name": "Dim Code Blocks and Inline Code",
+            "scope": "markup.raw",
+            "foreground": "#4b5563"
+        },
+        {
+            "name": "Dim Lists",
+            "scope": "markup.list",
+            "foreground": "#5a5a52"
+        },
+        {
+            "name": "Dim Quotes",
+            "scope": "markup.quote",
+            "foreground": "#524f5a"
+        },
+        {
+            "name": "Dim Punctuation",
+            "scope": "punctuation.definition",
+            "foreground": "#4b5563"
+        }
+    ]
 }
