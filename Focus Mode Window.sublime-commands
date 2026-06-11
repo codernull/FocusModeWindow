@@ -30,6 +30,14 @@
         }
     },
     {
+        "caption": "Preferences: Focus Mode Window Color Scheme",
+        "command": "edit_settings",
+        "args": {
+            "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
+            "default": "{\n\t\"variables\": {},\n\t\"globals\": {\n\t\t\"background\": \"#1b1d1f\",\n\t\t\"foreground\": \"#8a95a5\",\n\t\t\"line_highlight\": \"#31363d\"\n\t},\n\t\"rules\": []\n}\n"
+        }
+    },
+    {
         "caption": "Preferences: Focus Mode Window Key Bindings",
         "command": "edit_settings",
         "args": {
