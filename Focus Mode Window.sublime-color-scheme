@@ -1,46 +1,11 @@
 {
     "name": "Focus Mode Window",
     "author": "Focus Mode Window",
-    "variables": {
-        "background": "#1b1d1f",
-        "foreground": "#5c677d",
-        "line_highlight": "#31363d",
-        "caret": "#528BFF",
-        "selection": "#3E4451",
-        "inactive_selection": "#2C313C",
-        "invisibles": "#3B4048",
-        "gutter_fg": "#4B5263",
-        "invalid": "#E06C75",
-        "paragraph_band": "#232830",
-        "string": "#98C379",
-        "type": "#E5C07B"
-    },
+    "variables": {},
     "globals": {
-        "background": "var(background)",
-        "foreground": "var(foreground)",
-        "caret": "var(caret)",
-        "line_highlight": "var(line_highlight)",
-        "selection": "var(selection)",
-        "selection_border": "var(selection)",
-        "inactive_selection": "var(inactive_selection)",
-        "invisibles": "var(invisibles)",
-        "gutter": "var(background)",
-        "gutter_foreground": "var(gutter_fg)",
-        "line_diff_added": "var(string)",
-        "line_diff_modified": "var(type)",
-        "line_diff_deleted": "var(invalid)"
+        "background": "#1b1d1f",
+        "foreground": "#8a95a5",
+        "line_highlight": "#31363d"
     },
-    "rules": [
-        {
-            "name": "Dim all tokens",
-            "scope": "comment, constant, entity, invalid, keyword, markup, meta, storage, string, support, variable, source",
-            "foreground": "var(foreground)"
-        },
-        {
-            "name": "Focus paragraph spotlight",
-            "scope": "focusmode.paragraph",
-            "foreground": "var(paragraph_band)",
-            "background": "var(paragraph_band)"
-        }
-    ]
+    "rules": []
 }
