@@ -6,8 +6,8 @@
     "globals": {
         "background": "#1b1d1f",
         "foreground": "#5c6370",
-        "line_highlight": "#31363d",
-        "caret": "#ffffff"
+        "line_highlight": "#3E4B5E",
+        "caret": "#FFFFFF"
     },
     "rules": [
         {

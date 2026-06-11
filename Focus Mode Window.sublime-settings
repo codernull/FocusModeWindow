@@ -23,7 +23,7 @@
     "margin": 0,
 
     // Vertical breathing room between lines.
-    "line_padding_top": 2,
+    "line_padding_top": 7,
     "line_padding_bottom": 2,
 
     // Font size applied while in focus mode (restored on exit).
