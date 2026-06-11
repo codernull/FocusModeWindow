@@ -1,7 +1,14 @@
 {
     // Color scheme applied to every view while focus mode is on.
     // Restored to your normal scheme when you exit focus mode.
-    "color_scheme": "Packages/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
+    // NOTE: .sublime-color-scheme files are referenced by FILENAME ONLY
+    // (not a Packages/... path) - that is what Sublime Text 4 expects.
+    "color_scheme": "Focus Mode Window.sublime-color-scheme",
+
+    // Dynamically highlight the paragraph the caret is in (the block of text
+    // between blank lines), following the cursor. This is drawn with
+    // view.add_regions() on top of your normal current-line highlight.
+    "highlight_paragraph": true,
 
     // Soft-wrap column and horizontal margins of the centered text column.
     "wrap_width": 78,

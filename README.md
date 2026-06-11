@@ -13,10 +13,29 @@ setting exactly as it was.
 - One command toggles the whole window in and out of focus mode.
 - Hides sidebar, minimap, tabs, menu and status bar; optional OS full screen.
 - Centered text column with configurable width, margins and line padding.
-- Bundled `Focus Mode Window` color scheme that fades all syntax tokens and
-  highlights only the active line.
+- Bundled `Focus Mode Window` color scheme that fades all syntax tokens so other
+  text recedes, keeping prose readable.
+- **Dynamic current-paragraph spotlight** that follows the caret, drawn with
+  `view.add_regions()`, plus the built-in current-line highlight.
 - All original view/window settings are captured on entry and restored on exit.
 - Newly opened/activated views inherit focus styling while focus mode is active.
+
+### How the focus effect works (and an API note)
+
+Sublime Text's `view.add_regions()` **cannot change the foreground (text)
+color** of a region — its `scope` only sources a color for the region's
+background fill, outline, underline or gutter icon
+([forum](https://forum.sublimetext.com/t/add-regions-swaps-background-and-foreground/3587),
+[API ref](https://www.sublimetext.com/docs/api_reference.html)). The only way
+to recolor text is through a color scheme's scope rules. So:
+
+- **Fading other text** is done by the bundled color scheme (scope-based). This
+  is static per view, exactly like the original *Focus* plugin.
+- **Highlighting the current region** is dynamic: `highlight_line` marks the
+  caret's line, and `add_regions()` paints a soft background band over the whole
+  current paragraph, updated on every caret move
+  (`on_selection_modified_async`). Toggle it with the `highlight_paragraph`
+  setting.
 
 ## Installation
 
@@ -81,6 +100,7 @@ Open **Preferences → Package Settings → Focus Mode Window**:
 | `line_padding_top` | `8` | Pixels above each line |
 | `line_padding_bottom` | `8` | Pixels below each line |
 | `font_size` | `16` | Font size while focused (restored on exit). Set to `0` to keep your normal size and leave `Ctrl+-/=` zoom untouched |
+| `highlight_paragraph` | `true` | Draw a dynamic spotlight band over the caret's paragraph |
 | `full_screen` | `false` | Also enter OS full screen |
 
 ### Colors (faded text & current-line highlight)

@@ -21,7 +21,12 @@
         "inactive_selection": "#2a2c30",
         "invisibles": "#43464c",
         "gutter_fg": "#34373b",
-        "invalid": "#8a5a64"
+        "invalid": "#8a5a64",
+        // Background band for the dynamic current-paragraph spotlight. NOTE:
+        // add_regions() fills a region using the matched scope's *foreground*
+        // (it cannot set text foreground), so this color is defined as the
+        // "foreground" of the focusmode.paragraph rule below.
+        "paragraph_band": "#232a3d"
     },
 
     "globals": {
@@ -82,6 +87,15 @@
             "name": "Invalid (kept faint, slightly warm)",
             "scope": "invalid.illegal",
             "foreground": "var(invalid)"
+        },
+        {
+            // Dynamic current-paragraph spotlight, drawn by the plugin via
+            // view.add_regions(..., "focusmode.paragraph", DRAW_NO_OUTLINE).
+            // The region is filled with this rule's foreground color.
+            "name": "Focus paragraph spotlight (dynamic add_regions background)",
+            "scope": "focusmode.paragraph",
+            "foreground": "var(paragraph_band)",
+            "background": "var(paragraph_band)"
         }
     ]
 }
