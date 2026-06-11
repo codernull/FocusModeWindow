@@ -36,9 +36,19 @@
             "foreground": "#5a5a52"
         },
         {
-            "name": "Dim Quotes",
-            "scope": "markup.quote",
-            "foreground": "#524f5a"
+            "name": "Wiki Links",
+            "scope": "constant.other.reference.link.markdown, punctuation.definition.constant.markdown",
+            "foreground": "#6b7280"
+        },
+        {
+            "name": "Blockquotes",
+            "scope": "markup.quote.markdown",
+            "foreground": "#5c6370"
+        },
+        {
+            "name": "Blockquote Punctuation",
+            "scope": "punctuation.definition.blockquote.markdown",
+            "foreground": "#4b5263"
         },
         {
             "name": "Dim Punctuation",
