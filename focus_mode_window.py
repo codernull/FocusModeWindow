@@ -9,15 +9,6 @@ SETTINGS_FILE = "Focus Mode Window.sublime-settings"
 # Packages/... path) - that is the form Sublime Text 4 reliably resolves.
 DEFAULT_COLOR_SCHEME = "Focus Mode Window.sublime-color-scheme"
 
-# Key + scope for the dynamic current-paragraph spotlight drawn with
-# view.add_regions(). add_regions() CANNOT recolor text foreground (verified
-# against the ST4 API + forum), so the focus "dimming" of other text is done by
-# the color scheme; add_regions is used only for the dynamic background band
-# that follows the caret. The region is filled using the matched scope's
-# foreground color, hence focusmode.paragraph defines a foreground.
-PARAGRAPH_REGION_KEY = "focus_mode_paragraph"
-PARAGRAPH_SCOPE = "focusmode.paragraph"
-
 # State is persisted in window/view settings (not just a module-global dict) so
 # that toggling still works after a plugin reload. A module-global dict is wiped
 # whenever the user edits the plugin and Sublime reloads it, which would leave a
@@ -176,9 +167,10 @@ def _apply_focus_to_view(view, plugin_settings):
 
     vs.set("color_scheme", plugin_settings.get("color_scheme", DEFAULT_COLOR_SCHEME))
     vs.set("highlight_line", True)
-    vs.set("draw_centered", plugin_settings.get("draw_centered", False))
-    vs.set("word_wrap", plugin_settings.get("word_wrap", True))
-    vs.set("wrap_width", plugin_settings.get("wrap_width", 0))
+    vs.set("draw_centered", bool(plugin_settings.get("draw_centered", False)))
+    vs.set("word_wrap", bool(plugin_settings.get("word_wrap", True)))
+    wrap_width = plugin_settings.get("wrap_width", 0)
+    vs.set("wrap_width", 0 if wrap_width is None else wrap_width)
     vs.set("rulers", [])
     vs.set("gutter", False)
     vs.set("line_numbers", False)
@@ -200,55 +192,6 @@ def _apply_focus_to_view(view, plugin_settings):
         vs.set(VIEW_SAVED_KEY, saved)
 
 
-def _paragraph_region(view, point):
-    """The block of non-blank lines around `point` (blank lines are bounds)."""
-    line = view.line(point)
-    start = line.begin()
-    end = line.end()
-    size = view.size()
-    while start > 0:
-        prev = view.line(start - 1)
-        if not view.substr(prev).strip():
-            break
-        start = prev.begin()
-    while end < size:
-        nxt = view.line(end + 1)
-        if not view.substr(nxt).strip():
-            break
-        end = nxt.end()
-    return sublime.Region(start, end)
-
-
-def _update_paragraph_highlight(view):
-    """Draw/refresh the dynamic current-paragraph spotlight via add_regions."""
-    try:
-        if not view.settings().has(VIEW_SAVED_KEY):
-            return
-        if not bool(_plugin_settings().get("highlight_paragraph", True)):
-            view.erase_regions(PARAGRAPH_REGION_KEY)
-            return
-        sel = view.sel()
-        if not sel:
-            view.erase_regions(PARAGRAPH_REGION_KEY)
-            return
-        regions = []
-        seen = set()
-        for r in sel:
-            para = _paragraph_region(view, r.b)
-            box = (para.a, para.b)
-            if box not in seen:
-                seen.add(box)
-                regions.append(para)
-        # DRAW_NO_OUTLINE keeps the background fill (sourced from the scope's
-        # foreground) but draws no border, giving a clean spotlight band.
-        view.add_regions(
-            PARAGRAPH_REGION_KEY, regions, PARAGRAPH_SCOPE, "",
-            sublime.DRAW_NO_OUTLINE,
-        )
-    except Exception:
-        _log("error updating paragraph highlight:\n" + traceback.format_exc())
-
-
 def _focus_view(view, plugin_settings):
     """Capture a view's current settings and apply focus styling, once."""
     vs = view.settings()
@@ -256,7 +199,6 @@ def _focus_view(view, plugin_settings):
         return False
     vs.set(VIEW_SAVED_KEY, _capture_view_settings(view))
     _apply_focus_to_view(view, plugin_settings)
-    _update_paragraph_highlight(view)
     return True
 
 
@@ -265,10 +207,9 @@ def _unfocus_view(view):
     vs = view.settings()
     if not vs.has(VIEW_SAVED_KEY):
         return False
-    view.erase_regions(PARAGRAPH_REGION_KEY)
     erased = _restore_view_settings(view)
     vs.erase(VIEW_SAVED_KEY)
-    _log("view %d erased=%s + cleared paragraph regions" % (view.id(), erased))
+    _log("view %d erased=%s" % (view.id(), erased))
     return True
 
 
@@ -380,8 +321,9 @@ class FocusModeWindowDiagnoseCommand(sublime_plugin.WindowCommand):
             _log("WIN_CHROME_KEY=%r" % ws.get(WIN_CHROME_KEY, None))
         _log("exiting_in_progress=%s" % (window.id() in _exiting_windows))
         ps = _plugin_settings()
-        _log("plugin settings: font_size=%r color_scheme=%r highlight_paragraph=%r"
-             % (ps.get("font_size"), ps.get("color_scheme"), ps.get("highlight_paragraph")))
+        _log("plugin settings: font_size=%r color_scheme=%r word_wrap=%r wrap_width=%r"
+             % (ps.get("font_size"), ps.get("color_scheme"),
+                ps.get("word_wrap"), ps.get("wrap_width")))
         if view is None:
             _log("no active view")
         else:
@@ -389,11 +331,8 @@ class FocusModeWindowDiagnoseCommand(sublime_plugin.WindowCommand):
             _log("active view %d:" % view.id())
             _log("  has %s=%s" % (VIEW_SAVED_KEY, vs.has(VIEW_SAVED_KEY)))
             for key in ("color_scheme", "highlight_line", "font_size",
-                        "draw_centered", "word_wrap"):
+                        "draw_centered", "word_wrap", "wrap_width"):
                 _log("  effective %s=%r" % (key, vs.get(key)))
-            paras = view.get_regions(PARAGRAPH_REGION_KEY)
-            _log("  paragraph regions=%d -> %s"
-                 % (len(paras), [(r.a, r.b) for r in paras]))
             if view.sel():
                 _log("  caret=%d current line=%s"
                      % (view.sel()[0].b, view.line(view.sel()[0].b).to_tuple()))
@@ -413,15 +352,3 @@ class FocusModeWindowListener(sublime_plugin.EventListener):
         if not view.settings().has(VIEW_SAVED_KEY):
             if _focus_view(view, _plugin_settings()):
                 _log("styled newly activated view %d" % view.id())
-        else:
-            _update_paragraph_highlight(view)
-
-    def on_selection_modified_async(self, view):
-        # Move the dynamic paragraph spotlight with the caret. Cheap and only
-        # runs for views already in focus mode.
-        if not view.settings().has(VIEW_SAVED_KEY):
-            return
-        window = view.window()
-        if window is not None and window.id() in _exiting_windows:
-            return
-        _update_paragraph_highlight(view)

@@ -1,59 +1,42 @@
 {
     "name": "Focus Mode Window",
     "author": "Focus Mode Window",
-    "extends": "Packages/Color Scheme - Default/Mariana.sublime-color-scheme",
+    "extends": "Mariana.sublime-color-scheme",
     "variables": {},
     "globals": {
-        "background": "#1b1d1f",
-        "foreground": "#5c6370",
-        "line_highlight": "#3E4B5E",
-        "caret": "#FFFFFF"
+        "background": "#1f2329",
+        "foreground": "#d6deeb",
+        "line_highlight": "#343b45",
+        "caret": "#ffffff",
+        "selection": "#3f536b",
+        "selection_foreground": "#ffffff"
     },
     "rules": [
         {
-            "name": "Dim Headings",
+            "name": "Markdown headings",
             "scope": "markup.heading",
-            "foreground": "#5c677d"
+            "foreground": "#82aaff",
+            "font_style": "bold"
         },
         {
-            "name": "Dim Bold and Italic",
-            "scope": "markup.bold, markup.italic",
-            "foreground": "#6b7280"
+            "name": "Markdown links",
+            "scope": "markup.underline.link, meta.link.inline.markdown",
+            "foreground": "#89ddff"
         },
         {
-            "name": "Dim Links",
-            "scope": "markup.underline.link",
-            "foreground": "#4a5568"
-        },
-        {
-            "name": "Dim Code Blocks and Inline Code",
-            "scope": "markup.raw",
-            "foreground": "#4b5563"
-        },
-        {
-            "name": "Dim Lists",
-            "scope": "markup.list",
-            "foreground": "#5a5a52"
-        },
-        {
-            "name": "Wiki Links",
+            "name": "Markdown wiki links",
             "scope": "constant.other.reference.link.markdown, punctuation.definition.constant.markdown",
-            "foreground": "#6b7280"
+            "foreground": "#c792ea"
         },
         {
-            "name": "Blockquotes",
+            "name": "Markdown code",
+            "scope": "markup.raw",
+            "foreground": "#f78c6c"
+        },
+        {
+            "name": "Markdown blockquotes",
             "scope": "markup.quote.markdown",
-            "foreground": "#5c6370"
-        },
-        {
-            "name": "Blockquote Punctuation",
-            "scope": "punctuation.definition.blockquote.markdown",
-            "foreground": "#4b5263"
-        },
-        {
-            "name": "Dim Punctuation",
-            "scope": "punctuation.definition",
-            "foreground": "#4b5563"
+            "foreground": "#c3e88d"
         }
     ]
 }

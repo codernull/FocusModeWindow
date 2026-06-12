@@ -5,11 +5,6 @@
     // (not a Packages/... path) - that is what Sublime Text 4 expects.
     "color_scheme": "Focus Mode Window.sublime-color-scheme",
 
-    // Dynamically highlight the paragraph the caret is in (the block of text
-    // between blank lines), following the cursor. This is drawn with
-    // view.add_regions() on top of your normal current-line highlight.
-    "highlight_paragraph": true,
-
     // Center the text column. Set to false to align left.
     "draw_centered": false,
 

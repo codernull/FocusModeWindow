@@ -28,7 +28,7 @@
                                 "command": "edit_settings",
                                 "args": {
                                     "base_file": "${packages}/FocusModeWindow/Focus Mode Window.sublime-color-scheme",
-                                    "default": "{\n\t\"variables\": {},\n\t\"globals\": {\n\t\t\"background\": \"#1b1d1f\",\n\t\t\"foreground\": \"#8a95a5\",\n\t\t\"line_highlight\": \"#31363d\"\n\t},\n\t\"rules\": []\n}\n"
+                                    "default": "{\n\t\"extends\": \"Mariana.sublime-color-scheme\",\n\t\"variables\": {},\n\t\"globals\": {\n\t\t\"background\": \"#1f2329\",\n\t\t\"foreground\": \"#d6deeb\",\n\t\t\"line_highlight\": \"#343b45\"\n\t},\n\t\"rules\": []\n}\n"
                                 },
                                 "caption": "Color Scheme"
                             },
