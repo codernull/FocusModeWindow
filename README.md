@@ -3,20 +3,21 @@
 A distraction-free **"focus mode"** plugin for [Sublime Text 4](https://www.sublimetext.com/).
 
 Toggling focus mode hides all chrome (sidebar, minimap, tabs, menu, status bar)
-and re-styles every open view with a centered, soft-wrapped, dimmed color scheme.
-Only the **current line** stands out — everything else is pressed down close to
-the background so your eye stays on what you're typing. Exiting restores every
-setting exactly as it was.
+and re-styles every open view with a centered, soft-wrapped color scheme. The
+current line and, optionally, the current paragraph get a soft background so
+your eye stays near the caret. Exiting restores every setting exactly as it was.
 
 ## Features
 
 - One command toggles the whole window in and out of focus mode.
 - Hides sidebar, minimap, tabs, menu and status bar; optional OS full screen.
 - Centered text column with configurable width, margins and line padding.
-- Bundled `Focus Mode Window` color scheme that fades all syntax tokens so other
-  text recedes, keeping prose readable.
+- Bundled `Focus Mode Window` color scheme that extends Sublime's Mariana theme
+  and keeps native Markdown highlighting readable.
 - **Dynamic current-paragraph spotlight** that follows the caret, drawn with
   `view.add_regions()`, plus the built-in current-line highlight.
+- Optional visible-viewport dimming outside the current paragraph, off by
+  default for a conservative look.
 - All original view/window settings are captured on entry and restored on exit.
 - Newly opened/activated views inherit focus styling while focus mode is active.
 
@@ -29,13 +30,17 @@ background fill, outline, underline or gutter icon
 [API ref](https://www.sublimetext.com/docs/api_reference.html)). The only way
 to recolor text is through a color scheme's scope rules. So:
 
-- **Fading other text** is done by the bundled color scheme (scope-based). This
-  is static per view, exactly like the original *Focus* plugin.
 - **Highlighting the current region** is dynamic: `highlight_line` marks the
   caret's line, and `add_regions()` paints a soft background band over the whole
   current paragraph, updated on every caret move
   (`on_selection_modified_async`). Toggle it with the `highlight_paragraph`
   setting.
+- **Dimming outside the current paragraph** is optional and only covers the
+  visible viewport. This follows the region-management notes from `del.md`: use
+  stable region keys, update with `add_regions()`, erase with `erase_regions()`,
+  and throttle rapid selection changes. The plugin does not adopt `del.md`'s
+  hard-coded state restoration examples because this package already persists
+  and restores view/window settings in its own architecture.
 
 ## Installation
 
@@ -95,30 +100,33 @@ Open **Preferences → Package Settings → Focus Mode Window**:
 | Key | Default | Meaning |
 | --- | --- | --- |
 | `color_scheme` | `Focus Mode Window.sublime-color-scheme` | Scheme used while focused |
-| `wrap_width` | `78` | Soft-wrap column |
-| `margin` | `48` | Horizontal margin of the centered column |
-| `line_padding_top` | `8` | Pixels above each line |
-| `line_padding_bottom` | `8` | Pixels below each line |
-| `font_size` | `16` | Font size while focused (restored on exit). Set to `0` to keep your normal size and leave `Ctrl+-/=` zoom untouched |
+| `word_wrap` | `true` | Enables soft wrapping while focused |
+| `wrap_width` | `0` | Soft-wrap column; `0` wraps at the window width |
+| `margin` | `0` | Horizontal margin of the centered column |
+| `line_padding_top` | `7` | Pixels above each line |
+| `line_padding_bottom` | `2` | Pixels below each line |
+| `font_size` | `0` | Font size while focused. `0` keeps your normal size and leaves `Ctrl+-/=` zoom untouched |
 | `highlight_paragraph` | `true` | Draw a dynamic spotlight band over the caret's paragraph |
+| `dim_non_current_viewport` | `false` | Draw a subtle background over visible text outside the current paragraph |
+| `paragraph_highlight_scope` | `focus.paragraph` | Color-scheme scope for the paragraph region background |
+| `dim_highlight_scope` | `focus.dim` | Color-scheme scope for the optional dim region background |
+| `region_update_throttle_ms` | `30` | Minimum delay between region redraws during rapid caret movement |
 | `full_screen` | `false` | Also enter OS full screen |
 
-### Colors (faded text & current-line highlight)
+### Colors (Markdown and region backgrounds)
 
-The bundled `Focus Mode Window` color scheme adapts the palette of
-[**Focus** by Sindre Sorhus](https://github.com/sindresorhus/focus) (MIT): a
-calm, warm-neutral dark background where syntax tokens are pressed down toward
-the background so code reads as one quiet block, while prose, strings and
-headings stay readable. The current line is marked by a soft, natural highlight
-band — never a harsh colored bar.
+The bundled `Focus Mode Window` color scheme extends Mariana instead of
+overriding all Markdown tokens. It sets a calm background, current-line
+highlight, and the two region background scopes used by the plugin:
+`focus.paragraph` and `focus.dim`. Markdown-specific rules are limited to small
+readability fallbacks for headings, links, wiki links, inline/block code and
+blockquotes.
 
-Edit **Color Scheme** from the menu. Everything is driven by `variables` at the
-top, so tweaking is easy:
+Edit **Color Scheme** from the menu. The main variables are:
 
-- `dim` — how faded the non-prose text is (closer to `background` = more faded).
-- `bright` — color of the text that should stand out (prose / strings).
-- `line_highlight` — the band behind the current line (keep it close to
-  `background` for a gentle effect).
+- `focus_paragraph` — background for the current paragraph region.
+- `focus_dim` — background for the optional visible-viewport dim region.
+- `line_highlight` — the band behind the current line.
 
 ## Troubleshooting
 

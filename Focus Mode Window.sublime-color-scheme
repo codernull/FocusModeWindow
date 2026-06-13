@@ -2,7 +2,10 @@
     "name": "Focus Mode Window",
     "author": "Focus Mode Window",
     "extends": "Mariana.sublime-color-scheme",
-    "variables": {},
+    "variables": {
+        "focus_paragraph": "#3a4150",
+        "focus_dim": "#00000024"
+    },
     "globals": {
         "background": "#1f2329",
         "foreground": "#d6deeb",
@@ -13,8 +16,18 @@
     },
     "rules": [
         {
+            "name": "Focus paragraph region",
+            "scope": "focus.paragraph",
+            "background": "var(focus_paragraph)"
+        },
+        {
+            "name": "Focus dim visible region",
+            "scope": "focus.dim",
+            "background": "var(focus_dim)"
+        },
+        {
             "name": "Markdown headings",
-            "scope": "markup.heading",
+            "scope": "markup.heading.markdown",
             "foreground": "#82aaff",
             "font_style": "bold"
         },
@@ -30,7 +43,7 @@
         },
         {
             "name": "Markdown code",
-            "scope": "markup.raw",
+            "scope": "markup.raw.markdown, markup.raw.block.markdown",
             "foreground": "#f78c6c"
         },
         {

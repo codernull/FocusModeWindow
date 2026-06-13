@@ -1,3 +1,4 @@
+import time
 import traceback
 
 import sublime
@@ -20,6 +21,9 @@ WIN_ACTIVE_KEY = "focus_mode_window_active"
 WIN_CHROME_KEY = "focus_mode_window_chrome"
 WIN_FULLSCREEN_KEY = "focus_mode_window_fullscreen_toggled"
 VIEW_SAVED_KEY = "focus_mode_window_saved"
+PARAGRAPH_REGION_KEY = "focus_mode_window_paragraph"
+DIM_REGION_KEY = "focus_mode_window_dim"
+REGION_FLAGS = sublime.DRAW_NO_OUTLINE | sublime.HIDE_ON_MINIMAP
 
 VIEW_SETTING_KEYS = (
     "color_scheme",
@@ -56,6 +60,8 @@ WINDOW_CHROME = (
 # already-focused settings as "original" and re-apply them, silently undoing the
 # exit ("focus mode won't turn off").
 _exiting_windows = set()
+_region_last_draw = {}
+_region_pending = set()
 
 
 def _log(message):
@@ -67,11 +73,172 @@ def plugin_loaded():
 
 
 def plugin_unloaded():
+    for window in sublime.windows():
+        for view in window.views():
+            _clear_focus_regions(view)
     _log("plugin unloaded")
 
 
 def _plugin_settings():
     return sublime.load_settings(SETTINGS_FILE)
+
+
+def _first_selection_point(view):
+    selection = view.sel()
+    if not selection:
+        return 0
+    return max(0, min(selection[0].b, view.size()))
+
+
+def _is_blank_line(view, line):
+    return view.substr(line).strip() == ""
+
+
+def _current_paragraph_region(view):
+    size = view.size()
+    if size == 0:
+        return None
+
+    point = _first_selection_point(view)
+    line = view.line(point)
+    if _is_blank_line(view, line):
+        return None
+
+    visible = view.visible_region()
+    start = line.a
+    end = line.b
+    row, _col = view.rowcol(line.a)
+    visible_start_row, _col = view.rowcol(visible.a)
+    visible_end_row, _col = view.rowcol(visible.b)
+
+    prev_row = row - 1
+    while prev_row >= visible_start_row:
+        prev_line = view.line(view.text_point(prev_row, 0))
+        if _is_blank_line(view, prev_line):
+            break
+        start = prev_line.a
+        prev_row -= 1
+
+    next_row = row + 1
+    while next_row <= visible_end_row:
+        next_line = view.line(view.text_point(next_row, 0))
+        if _is_blank_line(view, next_line):
+            break
+        end = next_line.b
+        next_row += 1
+
+    region = sublime.Region(max(start, visible.a), min(end, visible.b))
+    if region.empty():
+        return None
+    return region
+
+
+def _visible_dim_regions(view, paragraph):
+    if paragraph is None:
+        return []
+
+    visible = view.visible_region()
+    regions = []
+
+    before = sublime.Region(visible.a, min(paragraph.a, visible.b))
+    if not before.empty():
+        regions.append(before)
+
+    after = sublime.Region(max(paragraph.b, visible.a), visible.b)
+    if not after.empty():
+        regions.append(after)
+
+    return regions
+
+
+def _schedule_update_focus_regions(view, plugin_settings=None):
+    if view is None:
+        return
+
+    view_id = view.id()
+    now = time.time()
+    throttle_ms = (plugin_settings or _plugin_settings()).get("region_update_throttle_ms", 30)
+    throttle_s = max(0, throttle_ms) / 1000.0
+    elapsed = now - _region_last_draw.get(view_id, 0)
+
+    if elapsed >= throttle_s and view_id not in _region_pending:
+        _region_pending.add(view_id)
+
+        def draw_now():
+            _region_pending.discard(view_id)
+            _region_last_draw[view_id] = time.time()
+            _update_focus_regions(view, plugin_settings)
+
+        sublime.set_timeout(draw_now, 0)
+        return
+
+    if view_id in _region_pending:
+        return
+
+    delay_ms = int(max(0, throttle_s - elapsed) * 1000)
+    _region_pending.add(view_id)
+
+    def draw_later():
+        _region_pending.discard(view_id)
+        _region_last_draw[view_id] = time.time()
+        _update_focus_regions(view, plugin_settings)
+
+    sublime.set_timeout(draw_later, delay_ms)
+
+
+def _clear_focus_regions(view):
+    if view is None:
+        return
+    try:
+        view.erase_regions(PARAGRAPH_REGION_KEY)
+        view.erase_regions(DIM_REGION_KEY)
+    except Exception:
+        _log("error clearing focus regions:\n" + traceback.format_exc())
+
+
+def _update_focus_regions(view, plugin_settings=None):
+    if view is None:
+        return
+
+    window = view.window()
+    if window is None or not view.settings().has(VIEW_SAVED_KEY):
+        _clear_focus_regions(view)
+        return
+
+    settings = plugin_settings or _plugin_settings()
+    paragraph = _current_paragraph_region(view)
+
+    try:
+        if (
+            bool(settings.get("highlight_paragraph", True))
+            and paragraph is not None
+        ):
+            view.add_regions(
+                PARAGRAPH_REGION_KEY,
+                [paragraph],
+                settings.get("paragraph_highlight_scope", "focus.paragraph"),
+                "",
+                REGION_FLAGS,
+            )
+        else:
+            view.erase_regions(PARAGRAPH_REGION_KEY)
+
+        if bool(settings.get("dim_non_current_viewport", False)):
+            dim_regions = _visible_dim_regions(view, paragraph)
+            if dim_regions:
+                view.add_regions(
+                    DIM_REGION_KEY,
+                    dim_regions,
+                    settings.get("dim_highlight_scope", "focus.dim"),
+                    "",
+                    REGION_FLAGS,
+                )
+            else:
+                view.erase_regions(DIM_REGION_KEY)
+        else:
+            view.erase_regions(DIM_REGION_KEY)
+    except Exception:
+        _log("error updating focus regions:\n" + traceback.format_exc())
 
 
 def _window_settings(window):
@@ -196,9 +363,11 @@ def _focus_view(view, plugin_settings):
     """Capture a view's current settings and apply focus styling, once."""
     vs = view.settings()
     if vs.has(VIEW_SAVED_KEY):
+        _schedule_update_focus_regions(view, plugin_settings)
         return False
     vs.set(VIEW_SAVED_KEY, _capture_view_settings(view))
     _apply_focus_to_view(view, plugin_settings)
+    _schedule_update_focus_regions(view, plugin_settings)
     return True
 
 
@@ -206,9 +375,14 @@ def _unfocus_view(view):
     """Restore a view if it is currently in focus mode."""
     vs = view.settings()
     if not vs.has(VIEW_SAVED_KEY):
+        _clear_focus_regions(view)
         return False
+    _clear_focus_regions(view)
     erased = _restore_view_settings(view)
     vs.erase(VIEW_SAVED_KEY)
+    _clear_focus_regions(view)
+    _region_last_draw.pop(view.id(), None)
+    _region_pending.discard(view.id())
     _log("view %d erased=%s" % (view.id(), erased))
     return True
 
@@ -352,3 +526,15 @@ class FocusModeWindowListener(sublime_plugin.EventListener):
         if not view.settings().has(VIEW_SAVED_KEY):
             if _focus_view(view, _plugin_settings()):
                 _log("styled newly activated view %d" % view.id())
+        else:
+            _schedule_update_focus_regions(view)
+
+    def on_selection_modified_async(self, view):
+        window = view.window()
+        if not _is_focus_window(window):
+            return
+        if window is not None and window.id() in _exiting_windows:
+            return
+        if not view.settings().has(VIEW_SAVED_KEY):
+            return
+        _schedule_update_focus_regions(view)

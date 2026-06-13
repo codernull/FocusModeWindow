@@ -25,6 +25,20 @@
     // Set to 0 to keep your normal font size and leave Ctrl+-/= zoom untouched.
     "font_size": 0,
 
+    // Draw a soft background over the caret's current paragraph.
+    "highlight_paragraph": true,
+
+    // Optionally dim only the visible viewport outside the current paragraph.
+    // Off by default to keep the effect conservative.
+    "dim_non_current_viewport": false,
+
+    // Color-scheme scopes used by the dynamic regions.
+    "paragraph_highlight_scope": "focus.paragraph",
+    "dim_highlight_scope": "focus.dim",
+
+    // Minimum delay between region redraws during rapid caret movement.
+    "region_update_throttle_ms": 30,
+
     // Set to true to also enter OS full screen on focus. Off by default.
     "full_screen": false
 }
